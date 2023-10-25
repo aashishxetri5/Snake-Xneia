@@ -24,7 +24,7 @@ class SnakeGame:
 
     def run(self):
         pygame.init()
-        screen = pygame.display.set_mode((self.width, self.height))
+        self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Snake Xenia")
 
         clock = pygame.time.Clock()
@@ -42,10 +42,10 @@ class SnakeGame:
             self.snake.check_collision_food(self.food)
             self.snake.check_boundaries()
 
-            screen.fill(BLACK)
-            self.snake.draw(screen)
-            self.food.draw(screen)
-            self.display_score(screen)
+            self.screen.fill(BLACK)
+            self.snake.draw(self.screen)
+            self.food.draw(self.screen)
+            self.display_score(self.screen)
 
             pygame.display.update()
             clock.tick(SNAKE_SPEED)
@@ -56,6 +56,27 @@ class SnakeGame:
         font = pygame.font.Font(None, 36)
         score_text = font.render(f"Score: {self.score}", True, WHITE)
         screen.blit(score_text, (10, 10))
+
+    def end_game(self):
+        self.game_over_screen()
+        pygame.quit()
+        exit()
+        
+
+    def game_over_screen(self):
+        font = pygame.font.Font(None, 48)
+        game_over_text = font.render("Game Over", True, WHITE)
+        score_text = font.render(f"Your Score: {self.score}", True, WHITE)
+        text_rect = game_over_text.get_rect(center=(self.width // 2, self.height // 2))
+        score_rect = score_text.get_rect(
+            center=(self.width // 2, (self.height // 2) + 50)
+        )
+
+        self.screen.blit(game_over_text, text_rect)
+        self.screen.blit(score_text, score_rect)
+        pygame.display.update()
+
+        pygame.time.wait(1000)  # Display the game over screen for 2 seconds
 
 
 class Snake:
@@ -83,7 +104,7 @@ class Snake:
         self.body.insert(0, new_head)
 
         if self.check_collision_self():  # Check for self-collision
-            pass
+            self.game.end_game()
 
         if self.body[0] == self.game.food.position:
             self.game.score += 1
@@ -121,8 +142,7 @@ class Snake:
             or head[1] >= self.game.height
             or head[1] < 0
         ):
-            pygame.quit()
-            exit()
+            self.game.end_game()
 
     def draw(self, screen):
         for segment in self.body:
